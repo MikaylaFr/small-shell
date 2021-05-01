@@ -6,7 +6,57 @@ Program: string_parsing.c
 #include <string.h> //String manipulation functions
 #include <stdio.h> //printf
 #include <stdlib.h> //calloc
+#include <sys/types.h> //pid_t
+#include <unistd.h> //getpid
 #include "string_parsing.h"
+
+/*
+Creates token from user input, handle variable expansion.
+@param string with space deliniated tokens, 1 for first call, 0 for all calls after
+    save pointer for strtok_r
+@return token, returns NULL when done.
+*/
+char *initToken(char *userInput, int firstCall, char **savePtr){
+    char *token = NULL;
+    //if first call
+    if(firstCall == 1) token = strtok_r(userInput, " ", savePtr);
+    //after first call
+    else token = strtok_r(NULL, " ", savePtr);
+
+    //No more tokens left in string
+    if(token == NULL) return NULL;
+
+    //Find all expansion variables and concatenate
+    for(char *subStringPtr = strstr(token, "$$"); subStringPtr != NULL; subStringPtr = strstr(token, "$$")){
+        //Get processID
+        int processIdInt = getpid();
+        char processIdStr[7];
+
+        //Convert to string
+        int processIdLen = sprintf(processIdStr, "%d", processIdInt);
+        //Error detection
+        if(processIdLen < 0){
+            return EXIT_FAILURE;
+        } 
+
+        //Create buffer
+        char *buffer = calloc(strlen(token) + processIdLen, sizeof(char));
+
+        //Find distance between sub-string ptr and beginning of string to determine how many bytes to copy
+        int size = subStringPtr - token;
+        //Concatenate up to before expansion
+        strncat(buffer, token, size);
+        //Concatenate PID
+        strncat(buffer, processIdStr, processIdLen);
+        //Concatenate rest of string if more
+        if(strlen(token) - size > 2) strncat(buffer, subStringPtr+2, strlen(token) - size);
+
+        //replace token with variable expansion token
+        token = buffer;
+    }
+
+    return token;
+};
 
 /*
 Extract tokens from the provided string and puts it in the userCommand
@@ -28,12 +78,12 @@ struct userCommand *parseInput(char *inputBuffer){
     //For strok_r
     char *saveptr;
     //Get first token
-    char *token = strtok_r(inputBuffer, " ", &saveptr);
+    char *token = initToken(inputBuffer, 1, &saveptr);
     //First token is command
     newCommand->command = calloc(strlen(token)+1, sizeof(char));
     strcpy(newCommand->command, token);
     
-    token = strtok_r(NULL, " ", &saveptr);
+    token = initToken(inputBuffer, 0, &saveptr);
     //Rest of string are optional entries
     if(token != NULL){
         //Find args until special symbol is recognized
@@ -44,19 +94,19 @@ struct userCommand *parseInput(char *inputBuffer){
             strcpy(newCommand->args[newCommand->numArgs], token);
             newCommand->numArgs++;
 
-            token = strtok_r(NULL, " ", &saveptr);
+            token = initToken(inputBuffer, 0, &saveptr);
         }
         //Find all input/output redirection
         while(token != NULL && strcmp("&", token) != 0){
             //If the next token will be input file
             if(strcmp("<", token) == 0){
-                token = strtok_r(NULL, " ", &saveptr);
+                token = initToken(inputBuffer, 0, &saveptr);
                 newCommand->inputFile = calloc(strlen(token)+1, sizeof(char));
                 strcpy(newCommand->inputFile, token);
             }
             //Next token will be output file
             else if(strcmp(">", token) == 0){
-                token = strtok_r(NULL, " ", &saveptr);
+                token = initToken(inputBuffer, 0, &saveptr);
                 newCommand->outputFile = calloc(strlen(token)+1, sizeof(char));
                 strcpy(newCommand->outputFile, token);
             }
@@ -65,7 +115,7 @@ struct userCommand *parseInput(char *inputBuffer){
                 newCommand->invalid = 1;
                 break;
             }
-            token = strtok_r(NULL, " ", &saveptr);
+            token = initToken(inputBuffer, 0, &saveptr);
         }
         //Should be at last token
         if(token != NULL && strcmp("&", token) == 0){

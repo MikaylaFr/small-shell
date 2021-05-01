@@ -17,6 +17,7 @@ struct userCommand{
 };
 
 struct userCommand *parseInput(char *inputBuffer);
+char *initToken(char *userInput, int firstCall, char **savePtr);
 
 //testing
 void test_printStruct(struct userCommand *cmdStruct);

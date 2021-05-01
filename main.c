@@ -33,11 +33,9 @@ int main(){
             fflush(NULL);
             continue;
         }
-        test_printStruct(userInput);
-
+        
         //Detect comment, skip user input
         if(userInput->command[0] == '#') continue;
-        printf("This shouldnt print after comment\n");
     }
     return 0;
 }

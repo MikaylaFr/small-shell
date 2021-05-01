@@ -27,11 +27,17 @@ int main(){
 
         //Create struct from user input
         struct userCommand *userInput = parseInput(inputBuffer);
+        //Error was detected in parsing
+        if(userInput->invalid == 1){
+            printf("Invalid entry\n");
+            fflush(NULL);
+            continue;
+        }
         test_printStruct(userInput);
 
         //Detect comment, skip user input
         if(userInput->command[0] == '#') continue;
-        printf("This shouldnt print");
+        printf("This shouldnt print after comment\n");
     }
     return 0;
 }

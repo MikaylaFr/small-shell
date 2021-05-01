@@ -13,6 +13,7 @@ struct userCommand{
     char *inputFile;
     char *outputFile;
     int background;
+    int invalid;
 };
 
 struct userCommand *parseInput(char *inputBuffer);

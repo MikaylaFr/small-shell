@@ -33,6 +33,7 @@ struct userCommand *parseInput(char *inputBuffer){
     strcpy(newCommand->command, token);
 
     //Rest of string are optional entries
+    char *prevToken = token;
     token = strtok_r(NULL, " ", &saveptr);
     while(token != NULL){
         //If the next token will be input file
@@ -40,26 +41,24 @@ struct userCommand *parseInput(char *inputBuffer){
             token = strtok_r(NULL, " ", &saveptr);
             newCommand->inputFile = calloc(strlen(token)+1, sizeof(char));
             strcpy(newCommand->inputFile, token);
-            continue;
         }
         //Next token will be output file
         else if(strcmp(">", token) == 0){
             token = strtok_r(NULL, " ", &saveptr);
             newCommand->outputFile = calloc(strlen(token)+1, sizeof(char));
             strcpy(newCommand->outputFile, token);
-            continue;
         }
-        //background process
-        else if(strcmp("&", token) == 0){
+       /* //background process
+        else if(strcmp("&", token) == 0 && saveptr == NULL){
             newCommand->background = 1;
-            continue;
-        }
+        }*/
         //If none of the above, must be arguement, add to arg list
         else{
             newCommand->args[newCommand->numArgs] = calloc(strlen(token)+1, sizeof(char));
             strcpy(newCommand->args[newCommand->numArgs], token);
             newCommand->numArgs++;
         }
+        prevToken = token;
         token = strtok_r(NULL, " ", &saveptr);
     }
     

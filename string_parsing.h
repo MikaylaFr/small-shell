@@ -17,4 +17,7 @@ struct userCommand{
 
 struct userCommand *parseInput(char *inputBuffer);
 
+//testing
+void test_printStruct(struct userCommand *cmdStruct);
+
 #endif

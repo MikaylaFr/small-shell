@@ -4,12 +4,14 @@ CFLAGS = -g -Wall -std=gnu99 -g3
 
 all : smallsh
 
-smallsh: main.o string_parsing.o
+smallsh: main.o string_parsing.o testing.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 main.o : main.c
 
-string_parsing.o : string_parsing.c string_parsing.h
+string_parsing.o : string_parsing.c
+
+testing.o : testing.c
 
 memTest :
 	valgrind --tool=memcheck --leak-check=yes smallsh

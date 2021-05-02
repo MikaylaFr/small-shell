@@ -14,7 +14,7 @@ int main(){
     //Struct to keep track of smallsh values
     struct smallsh_shell *smallsh, smallshStruct;
     smallsh = &smallshStruct;
-    smallsh->status = -5                                                                                                                                                                                                                                                                         ;
+    smallsh->status = 0;                                                                                                                                                                                                                                                                        ;
     smallsh->foregroundMode = 0;
     //Upper while loop to continue input prompt
     while(1){
@@ -64,7 +64,7 @@ int main(){
         }
         //status cmd
         else if(strcmp(userInput->command, statusCmd) == 0){
-            //TODO
+            builtIn_status(smallsh);
         }
         //other process
         else{

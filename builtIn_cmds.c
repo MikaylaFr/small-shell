@@ -10,6 +10,14 @@ Program: smallsh
 #include <dirent.h>
 #include <unistd.h> //chdir
 
+/*Prints exit status or terminating signal of the last foreground process
+@param
+@returns none
+*/
+void builtIn_status(struct smallsh_shell *smallsh){
+    printf("exit value %d\n", smallsh->status);
+};
+
 /*Changes directory of smallsh
 @param the user input command struct
 @returns none

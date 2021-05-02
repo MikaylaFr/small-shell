@@ -29,6 +29,7 @@ void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
 void builtIn_cd(struct userCommand *cmdStruct);
 void builtIn_exit(struct userCommand *cmdStruct);
 void freeStruct(struct userCommand *cmdStruct);
+void builtIn_status(struct smallsh_shell *smallsh);
 
 //String parsing
 struct userCommand *parseInput(char *inputBuffer);

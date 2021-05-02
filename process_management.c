@@ -10,6 +10,9 @@ Resources: OSU process explorations
 #include <stdlib.h>   // for exit
 #include <unistd.h>   // for execv, getpid, fork
 
+/* Creates process and executes given command, updates status.
+@param the user command parsed into userCommand struct, smallsh_shell struct from calling 
+*/
 void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smallsh){
     //Array to be passed to exec
     char **execArr = calloc(cmdStruct->numArgs + 2, sizeof(char*));
@@ -28,18 +31,33 @@ void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
     switch(spawnPid){
         case -1:
             perror("fork()\n");
-            exit(1);
+            exit(2);
             break;
         case 0:
             //Child process
             execvp(cmdStruct->command, execArr);
             //if error
-            exit(2);
+            perror(cmdStruct->command);
+            //flush stdout and stdin
+            fflush(NULL);
+            exit(1);
             break;
         default:
             spawnPid = waitpid(spawnPid, &childStatus, 0);
-            fflush(void);
-            
+            //flush stdout and stdin
+            fflush(NULL);
+            //find exit status
+            //if child exited normally
+            if(WIFEXITED(childStatus)){
+                //record status
+                smallsh->status = WEXITSTATUS(childStatus);
+            }
+            else{
+                //record status
+                smallsh->status = WTERMSIG(childStatus);
+            }
+            //clean memory
+            free(execArr);
             return;
     }
     

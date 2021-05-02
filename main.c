@@ -11,6 +11,11 @@ Resources: //https://stackoverflow.com/questions/9628637/how-can-i-get-rid-of-n-
 int MAX_CHAR = 2048;
 
 int main(){
+    //Struct to keep track of smallsh values
+    struct smallsh_shell *smallsh, smallshStruct;
+    smallsh = &smallshStruct;
+    smallsh->status = -5                                                                                                                                                                                                                                                                         ;
+    smallsh->foregroundMode = 0;
     //Upper while loop to continue input prompt
     while(1){
         //Get user input
@@ -41,7 +46,7 @@ int main(){
             continue;
         };
 
-        test_printStruct(userInput);
+        //test_printStruct(userInput);
 
         //Built in commands
         char exit[5] = {"exit"};
@@ -63,7 +68,14 @@ int main(){
         }
         //other process
         else{
-            //TODO
+            //Foreground process
+            if(userInput->background == 0){
+                foregroundProcess(userInput, smallsh);
+            }
+            //Background process
+            else{
+                //TODO
+            }
         }
 
         //free command struct

@@ -17,6 +17,14 @@ struct userCommand{
     int variableExp;
 };
 
+struct smallsh_shell{
+    int status;
+    int foregroundMode;
+};
+
+//Process Management commands
+void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smallsh);
+
 //built in commands
 void builtIn_cd(struct userCommand *cmdStruct);
 void builtIn_exit(struct userCommand *cmdStruct);

@@ -47,7 +47,7 @@ void checkBackground(struct smallsh_shell *smallsh);
 
 //built in commands
 void builtIn_cd(struct userCommand *cmdStruct);
-void builtIn_exit(struct userCommand *cmdStruct);
+void builtIn_exit(struct userCommand *cmdStruct, struct smallsh_shell *smallsh);
 void freeStruct(struct userCommand *cmdStruct);
 void builtIn_status(struct smallsh_shell *smallsh);
 

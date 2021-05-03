@@ -61,7 +61,7 @@ int main(){
 
         //Exit cmd
         if(strcmp(userInput->command, exit) == 0){
-            builtIn_exit(userInput);
+            builtIn_exit(userInput, smallsh);
             break;
         }
         //cd cmd

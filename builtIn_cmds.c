@@ -9,13 +9,16 @@ Program: smallsh
 #include <sys/types.h>
 #include <dirent.h>
 #include <unistd.h> //chdir
+#include <signal.h>
 
 /*Prints exit status or terminating signal of the last foreground process
 @param
 @returns none
 */
 void builtIn_status(struct smallsh_shell *smallsh){
-    printf("exit value %d\n", smallsh->status);
+    if(smallsh->status < 2) printf("exit value %d\n", smallsh->status);
+    //Status above 1 is a signal status
+    else printf("terminated by signal %d\n", smallsh->status);
 };
 
 /*Changes directory of smallsh
@@ -43,7 +46,19 @@ Prepares program to exit, cleans up memory
 @returns none
 TODO clean memory leak w/ variable expansion
 */
-void builtIn_exit(struct userCommand *cmdStruct){
+void builtIn_exit(struct userCommand *cmdStruct, struct smallsh_shell *smallsh){
+    //kill and free any background processes still running
+    if(smallsh->backTracking->numProcess > 0){
+        //kill processes and free memory
+        struct background_process *currProcess;
+        for(int i=0; i < smallsh->backTracking->numProcess; i++){
+            currProcess = smallsh->backTracking->head;
+
+            kill(currProcess->backProcess, 15);
+            smallsh->backTracking->head = currProcess->next;
+            free(currProcess);
+        }
+    }
     //Free structure
     freeStruct(cmdStruct);
     return;

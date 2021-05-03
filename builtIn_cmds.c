@@ -26,8 +26,6 @@ void builtIn_cd(struct userCommand *cmdStruct){
     //No args provided, changes directory to Home path
     if(cmdStruct->numArgs == 0){
         chdir(getenv("HOME"));
-        char currPath[256];
-        printf("Current directory: %s", getcwd(currPath, 255));
     }
     //else attempt to change directory to first arg
     else{

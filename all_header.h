@@ -6,6 +6,8 @@ Program: smallsh
 #ifndef ALL_HEADER
 #define ALL_HEADER
 
+#include <sys/types.h>
+
 struct userCommand{
     char *command;
     char *args[512]; //Array of strings
@@ -20,10 +22,28 @@ struct userCommand{
 struct smallsh_shell{
     int status;
     int foregroundMode;
+    struct background_tracking *backTracking;
 };
 
-//Process Management commands
+struct background_process{
+    pid_t backProcess;
+    int backStatus;
+    struct background_process *next;
+    struct background_process *prev;
+};
+
+struct background_tracking{
+    int numProcess;
+    struct background_process *head;
+    struct background_process *tail;
+};
+
+//Process Management
 void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smallsh);
+void backgroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smallsh);
+char **execArray(struct userCommand *cmdStruct);
+void addToBackList(struct background_process *newProcess, struct smallsh_shell *smallsh);
+void checkBackground(struct smallsh_shell *smallsh);
 
 //built in commands
 void builtIn_cd(struct userCommand *cmdStruct);

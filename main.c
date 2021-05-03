@@ -11,11 +11,18 @@ Resources: //https://stackoverflow.com/questions/9628637/how-can-i-get-rid-of-n-
 int MAX_CHAR = 2048;
 
 int main(){
-    //Struct to keep track of smallsh values
+    //Struct to keep track of smallsh values and background processes
+    struct background_tracking backgroundTracking;
+    backgroundTracking.head = NULL;
+    backgroundTracking.tail = NULL;
+    backgroundTracking.numProcess = 0;
+    
     struct smallsh_shell *smallsh, smallshStruct;
     smallsh = &smallshStruct;
     smallsh->status = 0;                                                                                                                                                                                                                                                                        ;
     smallsh->foregroundMode = 0;
+    smallsh->backTracking = &backgroundTracking;
+
     //Upper while loop to continue input prompt
     while(1){
         //Get user input
@@ -39,7 +46,6 @@ int main(){
             freeStruct(userInput);
             continue;
         }
-        
         //Detect comment, skip user input
         if(userInput->command[0] == '#'){
             freeStruct(userInput);
@@ -74,9 +80,12 @@ int main(){
             }
             //Background process
             else{
-                //TODO
+                backgroundProcess(userInput, smallsh);
             }
         }
+
+        //Check for background processes if finished
+        if(smallsh->backTracking->numProcess > 0) checkBackground(smallsh);
 
         //free command struct
         freeStruct(userInput);

@@ -44,6 +44,7 @@ void backgroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
 char **execArray(struct userCommand *cmdStruct);
 void addToBackList(struct background_process *newProcess, struct smallsh_shell *smallsh);
 void checkBackground(struct smallsh_shell *smallsh);
+void fileRedirection(struct userCommand *cmdStruct);
 
 //built in commands
 void builtIn_cd(struct userCommand *cmdStruct);

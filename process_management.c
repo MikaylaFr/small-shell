@@ -2,7 +2,7 @@
 Author: Mikayla Friend
 File: process_management.c
 Program: smallsh
-Resources: OSU process explorations
+Resources: OSU process, exec, and I/O explorations
 */
 #include "all_header.h"
 #include <sys/wait.h> // for waitpid
@@ -10,6 +10,64 @@ Resources: OSU process explorations
 #include <stdio.h>    // for printf and perror
 #include <stdlib.h>   // for exit
 #include <unistd.h>   // for execv, getpid, fork
+#include <fcntl.h>
+
+/*Handles file redirection
+@param cmd struct with parsed command
+*/
+void fileRedirection(struct userCommand *cmdStruct){
+    //Input file redirection
+    if(cmdStruct->inputFile != NULL){
+        //open input file
+        int inputFD = open(cmdStruct->inputFile, O_RDONLY);
+        if(inputFD == -1){
+            perror(cmdStruct->inputFile);
+            exit(1);
+        }
+        //Redirect input
+        int result = dup2(inputFD, 0);
+        if(result == -1){
+            perror("user input dup2()");
+            exit(1);
+        }
+    }
+    //if background process and no user defined redirection input
+    else if(cmdStruct->background == 1){
+        int inputFD = open("/dev/null", O_RDONLY);
+        // redirected to to null
+        int result = dup2(inputFD, 0);
+        if(result == -1){
+            perror("null input dup2()");
+            exit(1);
+        }        
+    };
+
+    //output file redirection
+    if(cmdStruct->outputFile != NULL){
+        //Open, trunicate, or create file
+        int outputFD = open(cmdStruct->outputFile, O_WRONLY | O_TRUNC | O_CREAT, 0664);
+        if(outputFD == -1){
+            perror(cmdStruct->inputFile);
+            exit(1);
+        }
+        //redirect output
+        int result = dup2(outputFD, 1);
+        if(result == -1){
+            perror("user output dup2()");
+            exit(1);
+        }
+    }
+    //if background process and no user defined redirection output
+    else if(cmdStruct->background == 1){
+        int outputFD = open("/dev/null", O_WRONLY | O_TRUNC);
+        // redirected to to null
+        int result = dup2(outputFD, 0);
+        if(result == -1){
+            perror("null output dup2()");
+            exit(1);
+        }        
+    };
+}
 
 /*Checks if any background processes have terminated
 @params smallsh struct with linked list to background processes
@@ -126,6 +184,9 @@ void backgroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
             break;
         case 0:
             //Child process
+            //test for file redirection and use dup2 if necessary
+            fileRedirection(cmdStruct);
+            //replace process with exec
             execvp(cmdStruct->command, execArr);
             //if error
             perror(cmdStruct->command);
@@ -167,6 +228,9 @@ void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
             break;
         case 0:
             //Child process
+            //test for file redirection and use dup2 if necessary
+            fileRedirection(cmdStruct);
+            //replace process with exec
             execvp(cmdStruct->command, execArr);
             //if error
             perror(cmdStruct->command);

@@ -12,10 +12,11 @@ Program: smallsh
 #include <signal.h>
 
 /*Prints exit status or terminating signal of the last foreground process
-@param
+@param the smallsh struct containing status of last foreground process
 @returns none
 */
 void builtIn_status(struct smallsh_shell *smallsh){
+    //If less than 2, exit was a value
     if(smallsh->status < 2) printf("exit value %d\n", smallsh->status);
     //Status above 1 is a signal status
     else printf("terminated by signal %d\n", smallsh->status);

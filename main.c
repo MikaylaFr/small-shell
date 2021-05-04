@@ -19,17 +19,10 @@ int TRACK_CHANGE = 0;
 //Handler for SIGTSTP
 void handle_SIGTSTP(int signo){
     //Enter foreground mode
-    if(FOREGROUND_MODE == 0){
-        FOREGROUND_MODE = 1;
-        //char *message = "\nEntering foreground-only mode (& is now ignored)\n";
-       // write(STDOUT_FILENO, message, strlen(message));
-    }
+    if(FOREGROUND_MODE == 0) FOREGROUND_MODE = 1;
     //Exiting foreground mode
-    else{
-        FOREGROUND_MODE = 0;
-        //char *message = "\nExiting foreground-only mode\n";
-       // write(STDOUT_FILENO, message, strlen(message));
-    }
+    else FOREGROUND_MODE = 0;
+
     fflush(stdout);
     TRACK_CHANGE++;
 };
@@ -39,13 +32,12 @@ int main(){
     struct sigaction SIGINT_action = {{0}};
     //Set handler to ignore
     SIGINT_action.sa_handler = SIG_IGN;
-    
     //Register handler
     sigaction(SIGINT, &SIGINT_action, NULL);
 
     //Initialize SIGTSTP structure
     struct sigaction SIGTSTP_action = {{0}};
-    //Set handler
+    //Set handler to function
     SIGTSTP_action.sa_handler = handle_SIGTSTP;
     //block all catchable signals
     sigfillset(&SIGTSTP_action.sa_mask);

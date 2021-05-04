@@ -9,6 +9,7 @@ Program: smallsh
 #include <sys/types.h>
 #include <signal.h>
 
+/*Struct to keep track of different parts of the user input*/
 struct userCommand{
     char *command;
     char *args[512]; //Array of strings
@@ -20,6 +21,7 @@ struct userCommand{
     int variableExp;
 };
 
+/*Struct to keep track of smallsh variables*/
 struct smallsh_shell{
     int status;
     int modeChange;
@@ -28,6 +30,7 @@ struct smallsh_shell{
     struct sigaction *SIGTSTP_action;
 };
 
+/*Linked list node with background process information*/
 struct background_process{
     pid_t backProcess;
     int backStatus;
@@ -35,14 +38,12 @@ struct background_process{
     struct background_process *prev;
 };
 
+/*Linked list head*/
 struct background_tracking{
     int numProcess;
     struct background_process *head;
     struct background_process *tail;
 };
-
-//Signal management
-
 
 //Process Management
 void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smallsh);

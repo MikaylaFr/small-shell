@@ -35,10 +35,6 @@ char *initToken(char *userInput, int firstCall, char **savePtr, struct userComma
 
         //Convert to string
         int processIdLen = sprintf(processIdStr, "%d", processIdInt);
-        //Error detection
-        if(processIdLen < 0){
-            return EXIT_FAILURE;
-        } 
 
         //Create buffer
         buffer = calloc(strlen(token) + processIdLen, sizeof(char));

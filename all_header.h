@@ -7,6 +7,7 @@ Program: smallsh
 #define ALL_HEADER
 
 #include <sys/types.h>
+#include <signal.h>
 
 struct userCommand{
     char *command;
@@ -23,6 +24,7 @@ struct smallsh_shell{
     int status;
     int foregroundMode;
     struct background_tracking *backTracking;
+    struct sigaction *SIGINT_action;
 };
 
 struct background_process{
@@ -37,6 +39,9 @@ struct background_tracking{
     struct background_process *head;
     struct background_process *tail;
 };
+
+//Signal management
+
 
 //Process Management
 void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smallsh);

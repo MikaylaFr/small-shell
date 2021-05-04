@@ -19,6 +19,7 @@ void builtIn_status(struct smallsh_shell *smallsh){
     if(smallsh->status < 2) printf("exit value %d\n", smallsh->status);
     //Status above 1 is a signal status
     else printf("terminated by signal %d\n", smallsh->status);
+    fflush(stdout);
 };
 
 /*Changes directory of smallsh
@@ -33,10 +34,8 @@ void builtIn_cd(struct userCommand *cmdStruct){
     //else attempt to change directory to first arg
     else{
         if(chdir(cmdStruct->args[0]) != 0){
-            perror("chdir failed");
+            perror(cmdStruct->args[0]);
         }
-        char currPath[256];
-        printf("Current directory: %s", getcwd(currPath, 255));
     }
 };
 

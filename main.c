@@ -3,22 +3,34 @@ Author: Mikayla Friend
 File: main.c
 Program: smallsh
 Resources: //https://stackoverflow.com/questions/9628637/how-can-i-get-rid-of-n-from-string-in-c
+        Signals explorations
 */
 #include <stdio.h> //printf, scanf
 #include <string.h> //string manipulation
+#include <signal.h>
 #include "all_header.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 int MAX_CHAR = 2048;
 
 int main(){
+    //Initialize sigint structure
+    struct sigaction SIGINT_action;
+    //Set handler to ignore
+    SIGINT_action.sa_handler = SIG_IGN;
+    //Register handler
+    sigaction(SIGINT, &SIGINT_action, NULL);
     //Struct to keep track of smallsh values and background processes
     struct background_tracking backgroundTracking;
     backgroundTracking.head = NULL;
     backgroundTracking.tail = NULL;
     backgroundTracking.numProcess = 0;
     
+    //Initialize smallsh values
     struct smallsh_shell *smallsh, smallshStruct;
     smallsh = &smallshStruct;
+    smallsh->SIGINT_action = &SIGINT_action;
     smallsh->status = 0;                                                                                                                                                                                                                                                                        ;
     smallsh->foregroundMode = 0;
     smallsh->backTracking = &backgroundTracking;
@@ -28,8 +40,9 @@ int main(){
         //Get user input
         char inputBuffer[MAX_CHAR];
         printf(":");
-        fflush(NULL);
+        fflush(stdout);
         fgets(inputBuffer, MAX_CHAR, stdin);
+        fflush(stdin);
         
         //Detect empty line, skip user input
         if(strlen(inputBuffer) == 1) continue;
@@ -42,7 +55,7 @@ int main(){
         //Error was detected in parsing
         if(userInput->invalid == 1){
             printf("Invalid entry\n");
-            fflush(NULL);
+            fflush(stdout);
             freeStruct(userInput);
             continue;
         }

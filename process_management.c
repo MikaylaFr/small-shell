@@ -227,7 +227,12 @@ void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
             exit(1);
             break;
         case 0:
+            printf("In child process");
             //Child process
+            //change signal handler
+            smallsh->SIGINT_action->sa_handler = SIG_DFL;
+            //Reregister signal
+            sigaction(SIGINT, smallsh->SIGINT_action, NULL);
             //test for file redirection and use dup2 if necessary
             fileRedirection(cmdStruct);
             //replace process with exec
@@ -251,6 +256,8 @@ void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
             else{
                 //record status
                 smallsh->status = WTERMSIG(childStatus);
+                //print to terminal
+                builtIn_status(smallsh);
             }
             //clean memory
             free(execArr);

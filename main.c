@@ -21,14 +21,14 @@ void handle_SIGTSTP(int signo){
     //Enter foreground mode
     if(FOREGROUND_MODE == 0){
         FOREGROUND_MODE = 1;
-        char *message = "\nEntering foreground-only mode (& is now ignored)\n";
-        write(STDOUT_FILENO, message, strlen(message));
+        //char *message = "\nEntering foreground-only mode (& is now ignored)\n";
+       // write(STDOUT_FILENO, message, strlen(message));
     }
     //Exiting foreground mode
     else{
         FOREGROUND_MODE = 0;
-        char *message = "\nExiting foreground-only mode\n";
-        write(STDOUT_FILENO, message, strlen(message));
+        //char *message = "\nExiting foreground-only mode\n";
+       // write(STDOUT_FILENO, message, strlen(message));
     }
     fflush(stdout);
     TRACK_CHANGE++;
@@ -49,8 +49,7 @@ int main(){
     SIGTSTP_action.sa_handler = handle_SIGTSTP;
     //block all catchable signals
     sigfillset(&SIGTSTP_action.sa_mask);
-    //Restart function if interupted
-    SIGTSTP_action.sa_flags = SA_RESTART;
+
     //Register handler
     sigaction(SIGTSTP, &SIGTSTP_action, NULL);
 
@@ -73,10 +72,36 @@ int main(){
     while(1){
         //Get user input
         char inputBuffer[MAX_CHAR];
-        printf(":");
-        fflush(stdout);
-        fgets(inputBuffer, MAX_CHAR, stdin);
+
+        //Dont Restart function if interupted
+        smallsh->SIGTSTP_action->sa_flags = 0;
+        //reregister signal
+        sigaction(SIGTSTP, smallsh->SIGTSTP_action, NULL);
         
+        //Try to get input again if function is interupted
+        char *inputPtr = NULL;
+        while(inputPtr == NULL){
+            printf(":");
+            fflush(stdout);
+            inputPtr = fgets(inputBuffer, MAX_CHAR, stdin);
+            //Was interupted because of ctrl z
+            if(TRACK_CHANGE == 1){
+                if(FOREGROUND_MODE == 1){
+                    printf("Entering foreground-only mode (& is now ignored)\n");
+                    fflush(stdout);
+                }
+                else{
+                    printf("Exiting foreground-only mode\n");
+                    fflush(stdout);
+                }
+                TRACK_CHANGE = 0;
+            }
+        }
+
+        //Restart function if interupted
+        smallsh->SIGTSTP_action->sa_flags = SA_RESTART;
+        //reregister signal
+        sigaction(SIGTSTP, smallsh->SIGTSTP_action, NULL);
         
         //Detect empty line, skip user input
         if(strlen(inputBuffer) <= 1) continue;
@@ -98,8 +123,6 @@ int main(){
             freeStruct(userInput);
             continue;
         };
-
-        //test_printStruct(userInput);
 
         //Built in commands
         char exit[5] = {"exit"};
@@ -133,6 +156,19 @@ int main(){
 
         //Check for background processes if finished
         if(smallsh->backTracking->numProcess > 0) checkBackground(smallsh);
+
+        //Check if there is a change in foreground mode
+        if(TRACK_CHANGE == 1){
+            if(FOREGROUND_MODE == 1){
+                printf("Entering foreground-only mode (& is now ignored)\n");
+                fflush(stdout);
+            }
+            else{
+                printf("Exiting foreground-only mode\n");
+                fflush(stdout);
+            }
+            TRACK_CHANGE = 0;
+        }
 
         //free command struct
         freeStruct(userInput);

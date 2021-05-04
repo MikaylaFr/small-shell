@@ -255,6 +255,7 @@ void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
             break;
         default:
             spawnPid = waitpid(spawnPid, &childStatus, 0);
+
             //flush stdout and stdin
             fflush(stdout);
             //find exit status

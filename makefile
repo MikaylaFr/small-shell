@@ -17,8 +17,6 @@ builtIn_cmds.o : builtIn_cmds.c
 
 process_management.o : process_management.c
 
-signal_handle.o : signal_handle.c
-
 memTest :
 	valgrind --tool=memcheck --leak-check=yes smallsh
 

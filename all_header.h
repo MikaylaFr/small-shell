@@ -22,9 +22,10 @@ struct userCommand{
 
 struct smallsh_shell{
     int status;
-    int foregroundMode;
+    int modeChange;
     struct background_tracking *backTracking;
     struct sigaction *SIGINT_action;
+    struct sigaction *SIGTSTP_action;
 };
 
 struct background_process{

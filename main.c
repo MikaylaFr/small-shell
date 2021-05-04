@@ -13,14 +13,47 @@ Resources: //https://stackoverflow.com/questions/9628637/how-can-i-get-rid-of-n-
 #include <unistd.h>
 
 int MAX_CHAR = 2048;
+int FOREGROUND_MODE = 0;
+int TRACK_CHANGE = 0;
+
+//Handler for SIGTSTP
+void handle_SIGTSTP(int signo){
+    //Enter foreground mode
+    if(FOREGROUND_MODE == 0){
+        FOREGROUND_MODE = 1;
+        char *message = "\nEntering foreground-only mode (& is now ignored)\n";
+        write(STDOUT_FILENO, message, strlen(message));
+    }
+    //Exiting foreground mode
+    else{
+        FOREGROUND_MODE = 0;
+        char *message = "\nExiting foreground-only mode\n";
+        write(STDOUT_FILENO, message, strlen(message));
+    }
+    fflush(stdout);
+    TRACK_CHANGE++;
+};
 
 int main(){
     //Initialize sigint structure
-    struct sigaction SIGINT_action;
+    struct sigaction SIGINT_action = {{0}};
     //Set handler to ignore
     SIGINT_action.sa_handler = SIG_IGN;
+    
     //Register handler
     sigaction(SIGINT, &SIGINT_action, NULL);
+
+    //Initialize SIGTSTP structure
+    struct sigaction SIGTSTP_action = {{0}};
+    //Set handler
+    SIGTSTP_action.sa_handler = handle_SIGTSTP;
+    //block all catchable signals
+    sigfillset(&SIGTSTP_action.sa_mask);
+    //Restart function if interupted
+    SIGTSTP_action.sa_flags = SA_RESTART;
+    //Register handler
+    sigaction(SIGTSTP, &SIGTSTP_action, NULL);
+
     //Struct to keep track of smallsh values and background processes
     struct background_tracking backgroundTracking;
     backgroundTracking.head = NULL;
@@ -31,8 +64,9 @@ int main(){
     struct smallsh_shell *smallsh, smallshStruct;
     smallsh = &smallshStruct;
     smallsh->SIGINT_action = &SIGINT_action;
-    smallsh->status = 0;                                                                                                                                                                                                                                                                        ;
-    smallsh->foregroundMode = 0;
+    smallsh->SIGTSTP_action = &SIGTSTP_action;
+    smallsh->status = 0;
+    smallsh->modeChange = 0;
     smallsh->backTracking = &backgroundTracking;
 
     //Upper while loop to continue input prompt
@@ -42,10 +76,10 @@ int main(){
         printf(":");
         fflush(stdout);
         fgets(inputBuffer, MAX_CHAR, stdin);
-        fflush(stdin);
+        
         
         //Detect empty line, skip user input
-        if(strlen(inputBuffer) == 1) continue;
+        if(strlen(inputBuffer) <= 1) continue;
 
         //Null the newline character
         inputBuffer[strlen(inputBuffer)-1] = 0;
@@ -88,7 +122,7 @@ int main(){
         //other process
         else{
             //Foreground process
-            if(userInput->background == 0){
+            if(userInput->background == 0 || FOREGROUND_MODE == 1){
                 foregroundProcess(userInput, smallsh);
             }
             //Background process

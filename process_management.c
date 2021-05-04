@@ -184,6 +184,11 @@ void backgroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
             break;
         case 0:
             //Child process
+            //Change signal handler for SIGTSTP to ignore;
+            smallsh->SIGTSTP_action->sa_handler = SIG_IGN;
+            //reregister signal
+            sigaction(SIGTSTP, smallsh->SIGTSTP_action, NULL);
+
             //test for file redirection and use dup2 if necessary
             fileRedirection(cmdStruct);
             //replace process with exec
@@ -227,14 +232,19 @@ void foregroundProcess(struct userCommand *cmdStruct, struct smallsh_shell *smal
             exit(1);
             break;
         case 0:
-            printf("In child process");
             //Child process
-            //change signal handler
+            //change signal handler for SIGINT
             smallsh->SIGINT_action->sa_handler = SIG_DFL;
             //Reregister signal
             sigaction(SIGINT, smallsh->SIGINT_action, NULL);
+            //Change signal handler for SIGTSTP to ignore;
+            smallsh->SIGTSTP_action->sa_handler = SIG_IGN;
+            //reregister signal
+            sigaction(SIGTSTP, smallsh->SIGTSTP_action, NULL);
+
             //test for file redirection and use dup2 if necessary
             fileRedirection(cmdStruct);
+
             //replace process with exec
             execvp(cmdStruct->command, execArr);
             //if error
